@@ -12,7 +12,7 @@ export default function App() {
   const submitHandler = (e) => {
     e.preventDefault();
     setNumberArr([]);
-    const numberArr = userInput.value.split(/[, ]+/);
+    const numberArr = userInput.value.trim().split(/[, ]+/);
 
     numberArr.forEach(async (arrayNumber) => {
       const number = Number(arrayNumber);
