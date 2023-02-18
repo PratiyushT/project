@@ -1,21 +1,30 @@
 import React, { useState } from "react";
 import Instruction from "./Instruction";
+import Results from "./Results";
 
 const Main = () => {
   const [userInput, setUserInput] = useState({
     value: "",
     isBeginning: true,
-    error: false,
+    showInstruction: true,
   });
   const [loading, setLoading] = useState(false);
   const [numberArr, setNumberArr] = useState([]);
-  const [showInstruction, setShowInstruction] = useState(true);
 
   const submitHandler = (e) => {
     e.preventDefault();
     setNumberArr([]);
-    const numberArr = userInput.value.trim().split(/[, ]+/);
 
+    //Create array by splitting at "," or " " and also check for repetition
+    let numberArr = [];
+    const initialArr = userInput.value.trim().split(/[, ]+/);
+    initialArr.forEach((element) => {
+      if (!numberArr.includes(element)) {
+        numberArr.push(element);
+      }
+    });
+
+    //Fetch data from API for every number in the array
     numberArr.forEach(async (arrayNumber) => {
       const number = Number(arrayNumber);
       switch (true) {
@@ -39,16 +48,16 @@ const Main = () => {
             { number, iseven: data.iseven },
           ]);
 
-          setUserInput({ value: "" });
+          setUserInput({ value: "", showInstruction: false });
           break;
       }
     });
   };
 
+  //Check at every change in input box.
   const changeHandler = (e) => {
-    setShowInstruction(false);
     const value = e.target.value.replace(/[^0-9, ]/g, "");
-    setUserInput({ value, isBeginning: true });
+    setUserInput({ value, isBeginning: true, showInstruction: true });
   };
 
   return (
@@ -86,31 +95,12 @@ const Main = () => {
 
         {/* RESULT DISPLAY AREA  */}
         {numberArr.length > 0 && !userInput.isBeginning && !loading && (
-          <div className="bg-gray-100 p-8 space-y-5 rounded-md font-semibold">
-            {numberArr.map((e) => {
-              return (
-                <>
-                  <p className="">
-                    The number {e.number} is{" "}
-                    <span className="font-bold">
-                      {!e.iseven ? "odd" : "even"}
-                    </span>
-                  </p>
-                  <div className="flex text-lg border-b-2">
-                    <p className="relative top-2.5">2</p>
-                    <div className="border-t-4 border-l-4 border-r-4 h-12 mx-2.5">
-                      <p className="py-1.5 text-center px-2">{e.number}</p>
-                    </div>
-                    <p className="relative top-2.5">{e.number / 2}</p>
-                  </div>
-                </>
-              );
-            })}
-          </div>
+          <Results numberArr={numberArr} />
         )}
       </form>
 
-      {showInstruction && <Instruction />}
+      {/* SHOW INSTRUCTIONS AREA  */}
+      {userInput.showInstruction && <Instruction />}
     </div>
   );
 };
