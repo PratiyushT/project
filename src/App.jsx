@@ -7,46 +7,44 @@ export default function App() {
     error: false,
   });
   const [loading, setLoading] = useState(false);
-  const [isEven, setIsEven] = useState(false);
-  const [displayMessage, setDisplayMessage] = useState();
+  const [numberArr, setNumberArr] = useState([]);
 
-  const submitHandler = async (e) => {
+  const submitHandler = (e) => {
     e.preventDefault();
+    setNumberArr([]);
+    const numberArr = userInput.value.split(/[, ]+/);
 
-    switch (true) {
-      case userInput.value > 999999:
-        alert("Enter a number smaller than 1,000,000");
-        setUserInput({ value: 999999, isBeginning: true });
-        break;
-      case userInput.value < 1:
-        alert("Enter a number greater than 0 ");
-        setUserInput({ value: 1, isBeginning: true });
-        break;
+    numberArr.forEach(async (arrayNumber) => {
+      const number = Number(arrayNumber);
+      switch (true) {
+        case number > 999999:
+          alert("Enter a number smaller than 1,000,000");
+          setUserInput({ value: 999999, isBeginning: true });
+          break;
+        case number < 1:
+          alert("Enter a number greater than 0 ");
+          setUserInput({ value: 1, isBeginning: true });
+          break;
+        default:
+          setLoading(true);
+          const resp = await fetch(
+            `https://api.isevenapi.xyz/api/iseven/${number}`
+          );
+          setLoading(false);
+          const data = await resp.json();
+          setNumberArr((prevArr) => [
+            ...prevArr,
+            { number, iseven: data.iseven },
+          ]);
 
-      default:
-        setDisplayMessage(userInput.value);
-        setUserInput({
-          value: userInput.value,
-          isBeginning: false,
-          error: false,
-        });
-
-        setLoading(true);
-        const resp = await fetch(
-          `https://api.isevenapi.xyz/api/iseven/${Number(userInput.value)}`
-        );
-        setLoading(false);
-        const data = await resp.json();
-
-        setIsEven(data.iseven);
-        setUserInput({ value: "" });
-        break;
-    }
+          setUserInput({ value: "" });
+          break;
+      }
+    });
   };
 
   const changeHandler = (e) => {
     const value = e.target.value.replace(/[^0-9, ]/g, "");
-    setDisplayMessage("beginning");
     setUserInput({ value, isBeginning: true });
   };
 
@@ -72,21 +70,21 @@ export default function App() {
         )}
 
         {/* LOADING TEXT  */}
-        {loading === true && <p>Loading...</p>}
+        {loading && <p>Loading...</p>}
 
         {/* RESULT DISPLAY AREA  */}
-        <p>
-          {isEven &&
-            !userInput.isBeginning &&
-            loading === false &&
-            `${displayMessage} is an even number`}
-        </p>
-        <p>
-          {!isEven &&
-            !userInput.isBeginning &&
-            loading === false &&
-            `${displayMessage} is a odd number`}
-        </p>
+        {numberArr.length > 0 &&
+          numberArr.map((e) => {
+            console.log(e);
+            return (
+              !userInput.isBeginning &&
+              !loading && (
+                <p>
+                  The number {e.number} is {!e.iseven ? "odd" : "even"}.
+                </p>
+              )
+            );
+          })}
       </form>
     </div>
   );
